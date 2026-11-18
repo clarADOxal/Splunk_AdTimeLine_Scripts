@@ -10,29 +10,12 @@ if (-not $isAdmin) {
 
 Write-Host "Le script est bien exécuté en tant qu'administrateur !" -ForegroundColor Green
 
-$pathfind=(Get-CimInstance Win32_Service -Filter "Name='Splunkd'").PathName
-$cleanPath = $pathfind -replace '^"([^"]+)".*$', '$1'
-$SPLUNK_HOME = Split-Path -Parent(Split-Path -Parent $cleanPath)
-write-host -fore cyan "INFO :$SPLUNK_HOME"
-
-
-& "$SPLUNK_HOME\bin\splunk.exe" stop
-
-$passwdPath = "$SPLUNK_HOME\etc\passwd"
-$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-if (Test-Path $passwdPath) {
-    Rename-Item -Path $passwdPath -NewName "passwd_$timestamp"
-    Write-Host "Ancien fichier passwd sauvegardé." -ForegroundColor Yellow
-}
-
-######################
-# New
 
 $forbiddenChars = @('#', ';', '[', ']', '=', '\', '$', '`', '"', "'")
 $isValid = $false
 
 do {
-    $securePassword = Read-Host "Entrez le mot de passe administrateur Splunk" -AsSecureString
+    $securePassword = Read-Host "Entrez le mot de passe administrateur Splunk (use this special only--> !@%^&*-_+? <--" -AsSecureString
     
     # Conversion temporaire en texte clair pour vérification
     $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
@@ -61,6 +44,26 @@ do {
         Write-Host "Mot de passe valide !" -ForegroundColor Green
     }
 } while (-not $isValid)
+
+
+$pathfind=(Get-CimInstance Win32_Service -Filter "Name='Splunkd'").PathName
+$cleanPath = $pathfind -replace '^"([^"]+)".*$', '$1'
+$SPLUNK_HOME = Split-Path -Parent(Split-Path -Parent $cleanPath)
+write-host -fore cyan "INFO :$SPLUNK_HOME"
+
+
+& "$SPLUNK_HOME\bin\splunk.exe" stop
+
+$passwdPath = "$SPLUNK_HOME\etc\passwd"
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+if (Test-Path $passwdPath) {
+    Rename-Item -Path $passwdPath -NewName "passwd_$timestamp"
+    Write-Host "Ancien fichier passwd sauvegardé." -ForegroundColor Yellow
+}
+
+######################
+# New
+
 
 
 
